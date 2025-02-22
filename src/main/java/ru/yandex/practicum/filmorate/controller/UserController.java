@@ -28,7 +28,7 @@ public class UserController {
         return user;
     }
 
-    @PatchMapping
+    @PutMapping
     public User updateUser(@RequestBody User newUser) {
         if (newUser.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
