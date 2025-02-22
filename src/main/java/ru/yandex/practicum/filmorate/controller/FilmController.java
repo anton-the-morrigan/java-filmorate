@@ -28,7 +28,7 @@ public class FilmController {
         return film;
     }
 
-    @PatchMapping
+    @PutMapping
     public Film updateFilm(@RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
