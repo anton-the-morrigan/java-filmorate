@@ -57,7 +57,7 @@ public class UserController {
         }
         log.info("Пользователь ввёл электронную почту: {}", user.getEmail());
         if (user.getLogin().contains(" ") || user.getLogin().isBlank()) {
-            throw new ConditionsNotMetException("логин не может быть пустым и содержать пробел");
+            throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробел");
         }
         log.info("Пользователь ввёл логин: {}", user.getLogin());
         if (user.getName().isBlank()) {
