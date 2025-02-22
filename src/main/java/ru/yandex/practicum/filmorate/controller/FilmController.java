@@ -64,7 +64,7 @@ public class FilmController {
             throw new ConditionsNotMetException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
         log.info("Выбрана дата релиза фильма: {}", film.getReleaseDate());
-        if (film.getDuration().isNegative()) {
+        if (film.getDuration() < 0) {
             throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
         }
         log.info("Выбрана продолжительность фильма: {}", film.getDuration());
