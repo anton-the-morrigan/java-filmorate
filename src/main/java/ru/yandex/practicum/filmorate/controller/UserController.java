@@ -17,7 +17,7 @@ import java.util.Map;
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
-    Integer userId = 0;
+    Integer userId = 1;
 
     @PostMapping
     public User createUser(@RequestBody User user) {
