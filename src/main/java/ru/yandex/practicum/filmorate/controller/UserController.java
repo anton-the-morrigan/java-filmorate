@@ -60,11 +60,12 @@ public class UserController {
             throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробел");
         }
         log.info("Пользователь ввёл логин: {}", user.getLogin());
-        if (user.getName().isBlank()) {
+        if (user.getName() == null) {
             user.setName(user.getLogin());
             log.info("Пользователь не ввёл имя, поэтому вместо него используется логин");
+        } else {
+            log.info("Пользователь ввёл имя: {}", user.getName());
         }
-        log.info("Пользователь ввёл имя: {}", user.getName());
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
         }
