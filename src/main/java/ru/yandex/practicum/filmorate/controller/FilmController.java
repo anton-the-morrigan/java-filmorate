@@ -39,7 +39,7 @@ public class FilmController {
             oldFilm.setName(newFilm.getName());
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            oldFilm.setDuration(oldFilm.getDuration());
+            oldFilm.setDuration(newFilm.getDuration());
             log.info("Данные фильма обновлены");
             return oldFilm;
         }
