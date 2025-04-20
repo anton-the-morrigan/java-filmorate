@@ -35,6 +35,11 @@ public class UserController {
         return userStorage.showAllUsers();
     }
 
+    @GetMapping("/users/{id}")
+    public User showUser(@PathVariable("id") Long id) {
+        return userStorage.getUsers().get(id);
+    }
+
     @PutMapping("/users/{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
         userService.addFriend(id, friendId);
