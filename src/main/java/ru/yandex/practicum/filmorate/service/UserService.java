@@ -14,6 +14,11 @@ import java.util.Collection;
 public class UserService {
     InMemoryUserStorage userStorage;
 
+    @Autowired
+    public UserService(InMemoryUserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
     public void addFriend(Long id, Long friendId) {
         if (!userStorage.getUsers().containsKey(id)) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
