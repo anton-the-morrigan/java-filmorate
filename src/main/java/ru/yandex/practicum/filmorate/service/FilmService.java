@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NoContentException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -30,11 +30,14 @@ public class FilmService {
     }
 
     public void unlikeFilm(Long id, Long userId) {
+        filmStorage.showFilm(id);
+        userStorage.showUser(userId);
+        
         if (!filmStorage.showFilm(id).getLikes().contains(userId)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
+            throw new NoContentException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
         }
         if (!userStorage.showUser(userId).getLikedFilms().contains(id)) {
-            throw new NotFoundException(String.format("Фильм с id %d не найден в понравившихся у пользователя с id %d", id, userId));
+            throw new NoContentException(String.format("Фильм с id %d не найден в понравившихся у пользователя с id %d", id, userId));
         }
 
         filmStorage.showFilm(id).getLikes().remove(userId);
