@@ -16,6 +16,12 @@ public class FilmService {
     InMemoryUserStorage userStorage;
     InMemoryFilmStorage filmStorage;
 
+        @Autowired
+    public FilmService (InMemoryUserStorage userStorage, InMemoryFilmStorage filmStorage) {
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
+    }
+
     public void likeFilm(Long id, Long userId) {
         if (!filmStorage.getFilms().containsKey(id)) {
             throw new NotFoundException(String.format("Фильм с id %d не найден", id));
