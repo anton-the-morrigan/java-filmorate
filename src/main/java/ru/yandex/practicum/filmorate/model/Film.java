@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+ckage ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 
@@ -14,5 +14,5 @@ public class Film {
     LocalDate releaseDate;
     Integer duration;
     Set<Long> likes = new HashSet<>();
-    Integer likesAmount = likes.size();
+    Integer likesAmount = 0;
 }
