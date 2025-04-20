@@ -24,26 +24,12 @@ public class FilmService {
     }
 
     public void likeFilm(Long id, Long userId) {
-        if (!filmStorage.getFilms().containsKey(id)) {
-            throw new NotFoundException(String.format("Фильм с id %d не найден", id));
-        }
-        if (!userStorage.getUsers().containsKey(userId)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
-        }
-
-        filmStorage.getFilms().get(id).getLikes().add(userId);
-        userStorage.getUsers().get(userId).getLikedFilms().add(id);
+        filmStorage.showFilm(id).getLikes().add(userId);
+        userStorage.showUser(userId).getLikedFilms().add(id);
         updateLikeAmount(id);
     }
 
     public void unlikeFilm(Long id, Long userId) {
-        if (!filmStorage.getFilms().containsKey(id)) {
-            throw new NotFoundException(String.format("Фильм с id %d не найден", id));
-        }
-        if (!userStorage.getUsers().containsKey(userId)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
-        }
-
         if (!filmStorage.getFilms().get(id).getLikes().contains(userId)) {
             throw new NotFoundException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
         }
@@ -51,8 +37,8 @@ public class FilmService {
             throw new NotFoundException(String.format("Фильм с id %d не найден в понравившихся у пользователя с id %d", id, userId));
         }
 
-        filmStorage.getFilms().get(id).getLikes().remove(userId);
-        userStorage.getUsers().get(userId).getLikedFilms().remove(id);
+        filmStorage.showFilm(id).getLikes().remove(userId);
+        userStorage.showUser(userId).getLikedFilms().remove(id);
         updateLikeAmount(id);
     }
 
