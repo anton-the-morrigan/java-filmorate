@@ -36,22 +36,22 @@ public class FilmController {
         return filmStorage.showAllFilms();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film showFilm(@PathVariable("id") Long id) {
         return filmStorage.getFilms().get(id);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         filmService.likeFilm(id, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public void unlikeFilm(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         filmService.unlikeFilm(id, userId);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public Collection<Film> showMostLikedFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
         if (count < 0) {
             throw new ValidationException("count", "Количество должно быть больше нуля");
