@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -32,6 +33,7 @@ public class FilmService {
 
         filmStorage.getFilms().get(id).getLikes().add(userId);
         userStorage.getUsers().get(userId).getLikedFilms().add(id);
+        updateLikeAmount(id);
     }
 
     public void unlikeFilm(Long id, Long userId) {
@@ -51,12 +53,17 @@ public class FilmService {
 
         filmStorage.getFilms().get(id).getLikes().remove(userId);
         userStorage.getUsers().get(userId).getLikedFilms().remove(id);
+        updateLikeAmount(id);
     }
 
     public Collection<Film> showMostLikedFilms(Integer count) {
         return filmStorage.getFilms().values().stream().sorted((f0, f1) -> {
             int comp = f0.getLikesAmount().compareTo(f1.getLikesAmount());
-            return comp;
+            return (-1) * comp;
         }).limit(count).collect(Collectors.toList());
+    }
+
+    private void updateLikeAmount(Long id) {
+        filmStorage.getFilms().get(id).setLikesAmount(filmStorage.getFilms().get(id).getLikes().size());
     }
 }
