@@ -3,12 +3,15 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 public class User {
-    Integer id;
+    Long id;
     String email;
     String login;
     String name;
     LocalDate birthday;
+    Set<Long> friends;
+    Set<Long> likedFilms;
 }
