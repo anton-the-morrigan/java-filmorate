@@ -30,10 +30,10 @@ public class FilmService {
     }
 
     public void unlikeFilm(Long id, Long userId) {
-        if (!filmStorage.getFilms().get(id).getLikes().contains(userId)) {
+        if (!filmStorage.showFilm(id).getLikes().contains(userId)) {
             throw new NotFoundException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
         }
-        if (!userStorage.getUsers().get(userId).getLikedFilms().contains(id)) {
+        if (!userStorage.showUser(userId).getLikedFilms().contains(id)) {
             throw new NotFoundException(String.format("Фильм с id %d не найден в понравившихся у пользователя с id %d", id, userId));
         }
 
@@ -50,6 +50,6 @@ public class FilmService {
     }
 
     private void updateLikeAmount(Long id) {
-        filmStorage.getFilms().get(id).setLikesAmount(filmStorage.getFilms().get(id).getLikes().size());
+        filmStorage.showFilm(id).setLikesAmount(filmStorage.getFilms().get(id).getLikes().size());
     }
 }
