@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NoContentException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
@@ -30,10 +30,10 @@ public class UserService {
     public void removeFriend(Long id, Long friendId) {
 
         if (!userStorage.showUser(id).getFriends().contains(friendId)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
+            throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
         }
         if (!userStorage.showUser(friendId).getFriends().contains(id)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", friendId, id));
+            throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", friendId, id));
         }
 
         userStorage.showUser(id).getFriends().remove(friendId);
