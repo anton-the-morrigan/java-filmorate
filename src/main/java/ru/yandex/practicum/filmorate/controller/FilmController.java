@@ -36,6 +36,11 @@ public class FilmController {
         return filmStorage.showAllFilms();
     }
 
+    @GetMapping("/films/{id}")
+    public Film showFilm(@PathVariable("id") Long id) {
+        return filmStorage.getFilms().get(id);
+    }
+
     @PutMapping("/films/{id}/like/{userId}")
     public void likeFilm(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         filmService.likeFilm(id, userId);
