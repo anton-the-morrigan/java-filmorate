@@ -32,7 +32,7 @@ public class FilmService {
     public void unlikeFilm(Long id, Long userId) {
         filmStorage.showFilm(id);
         userStorage.showUser(userId);
-        
+
         if (!filmStorage.showFilm(id).getLikes().contains(userId)) {
             throw new NoContentException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
         }
