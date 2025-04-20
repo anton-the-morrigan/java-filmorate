@@ -28,6 +28,8 @@ public class UserService {
     }
 
     public void removeFriend(Long id, Long friendId) {
+        userStorage.showUser(id);
+        userStorage.showUser(friendId);
 
         if (!userStorage.showUser(id).getFriends().contains(friendId)) {
             throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
