@@ -25,9 +25,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConditionsNotMetException(final ConditionsNotMetException e) {
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(final Throwable ignored) {
+        return new ErrorResponse("Произошла непредвиденная ошибка");
     }
 
 }
