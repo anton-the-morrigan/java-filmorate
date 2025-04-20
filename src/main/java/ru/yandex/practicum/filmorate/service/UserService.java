@@ -29,10 +29,10 @@ public class UserService {
 
     public void removeFriend(Long id, Long friendId) {
 
-        if (!userStorage.getUsers().get(id).getFriends().contains(friendId)) {
+        if (!userStorage.showUser(id).getFriends().contains(friendId)) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
         }
-        if (!userStorage.getUsers().get(friendId).getFriends().contains(id)) {
+        if (!userStorage.showUser(friendId).getFriends().contains(id)) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", friendId, id));
         }
 
@@ -44,8 +44,8 @@ public class UserService {
 
     public Collection<User> showFriends(Long id) {
         Collection<User> friends = new ArrayList<>();
-        for (Long friend : userStorage.getUsers().get(id).getFriends()) {
-            friends.add(userStorage.getUsers().get(friend));
+        for (Long friend : userStorage.showUser(id).getFriends()) {
+            friends.add(userStorage.showUser(friend));
         }
         return friends;
     }
