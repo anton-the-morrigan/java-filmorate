@@ -14,6 +14,8 @@ public class UserController {
     private final InMemoryUserStorage userStorage;
     private final UserService userService;
 
+    private final String friendsPath = "/{id}/friends/{friend-id}";
+
     public UserController(InMemoryUserStorage userStorage, UserService userService) {
         this.userStorage = userStorage;
         this.userService = userService;
@@ -37,16 +39,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User showUser(@PathVariable("id") Long id) {
-        return userStorage.getUsers().get(id);
+        return userStorage.showUser(id);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+    @PutMapping(friendsPath)
+    public void addFriend(@PathVariable("id") Long id, @PathVariable("friend-id") Long friendId) {
         userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+    @DeleteMapping(friendsPath)
+    public void removeFriend(@PathVariable("id") Long id, @PathVariable("friend-id") Long friendId) {
         userService.removeFriend(id, friendId);
     }
 
@@ -55,8 +57,8 @@ public class UserController {
         return userService.showFriends(id);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> showCommonFriends(@PathVariable("id") Long id, @PathVariable("otherId") Long otherId) {
+    @GetMapping("/{id}/friends/common/{other-id}")
+    public Collection<User> showCommonFriends(@PathVariable("id") Long id, @PathVariable("other-id") Long otherId) {
         return userService.showCommonFriends(id, otherId);
     }
 

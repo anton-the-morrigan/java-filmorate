@@ -15,6 +15,8 @@ public class FilmController {
     private final InMemoryFilmStorage filmStorage;
     private final FilmService filmService;
 
+    private final String likePath = "/{id}/like/{user-id}";
+
     public FilmController(InMemoryFilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
@@ -38,16 +40,16 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film showFilm(@PathVariable("id") Long id) {
-        return filmStorage.getFilms().get(id);
+        return filmStorage.showFilm(id);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public void likeFilm(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+    @PutMapping(likePath)
+    public void likeFilm(@PathVariable("id") Long id, @PathVariable("user-id") Long userId) {
         filmService.likeFilm(id, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public void unlikeFilm(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+    @DeleteMapping(likePath)
+    public void unlikeFilm(@PathVariable("id") Long id, @PathVariable("user-id") Long userId) {
         filmService.unlikeFilm(id, userId);
     }
 

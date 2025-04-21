@@ -15,6 +15,10 @@ import java.util.Collection;
 public class UserService {
     InMemoryUserStorage userStorage;
 
+    private final String friends = "Пользователь %d теперь дружит с пользователем %d";
+    private final String friendNotFound = "Пользователь с id %d не найден в друзьях у пользователя с id %d";
+    private final String noMoreFriends = "Пользователь %d больше не дружит с пользователем %d";
+
     @Autowired
     public UserService(InMemoryUserStorage userStorage) {
         this.userStorage = userStorage;
@@ -22,26 +26,26 @@ public class UserService {
 
     public void addFriend(Long id, Long friendId) {
         userStorage.showUser(id).getFriends().add(friendId);
-        log.info(String.format("Пользователь %d теперь дружит с пользователем %d", id, friendId));
+        log.info(String.format(friends, id, friendId));
         userStorage.showUser(friendId).getFriends().add(id);
-        log.info(String.format("Пользователь %d теперь дружит с пользователем %d", friendId, id));
+        log.info(String.format(friends, friendId, id));
     }
 
     public void removeFriend(Long id, Long friendId) {
-        userStorage.showUser(id);
-        userStorage.showUser(friendId);
+        User user = userStorage.showUser(id);
+        User friend = userStorage.showUser(friendId);
 
-        if (!userStorage.showUser(id).getFriends().contains(friendId)) {
-            throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
+        if (!user.getFriends().contains(friendId)) {
+            throw new NoContentException(String.format(friendNotFound, id, friendId));
         }
-        if (!userStorage.showUser(friendId).getFriends().contains(id)) {
-            throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", friendId, id));
+        if (!friend.getFriends().contains(id)) {
+            throw new NoContentException(String.format(friendNotFound, friendId, id));
         }
 
         userStorage.showUser(id).getFriends().remove(friendId);
-        log.info(String.format("Пользователь %d больше не дружит с пользователем %d", id, friendId));
+        log.info(String.format(noMoreFriends, id, friendId));
         userStorage.showUser(friendId).getFriends().remove(id);
-        log.info(String.format("Пользователь %d больше не дружит с пользователем %d", friendId, id));
+        log.info(String.format(noMoreFriends, friendId, id));
     }
 
     public Collection<User> showFriends(Long id) {
