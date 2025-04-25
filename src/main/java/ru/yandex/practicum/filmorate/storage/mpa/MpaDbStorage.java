@@ -21,7 +21,7 @@ public class MpaDbStorage implements MpaStorage {
         String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, this::mpaMapper, id);
-        } catch (NotFoundException e) {
+        } catch (RuntimeException e) {
             throw new NotFoundException(String.format("Рейтинг MPA с id %d не найден", id));
         }
     }
