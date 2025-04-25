@@ -2,58 +2,73 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoContentException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Slf4j
 @Service
 public class FilmService {
-    InMemoryUserStorage userStorage;
-    InMemoryFilmStorage filmStorage;
+    UserDbStorage userStorage;
+    FilmDbStorage filmStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public FilmService(InMemoryUserStorage userStorage, InMemoryFilmStorage filmStorage) {
+    public FilmService(UserDbStorage userStorage, FilmDbStorage filmStorage, JdbcTemplate jdbcTemplate) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void likeFilm(Long id, Long userId) {
-        filmStorage.showFilm(id).getLikes().add(userId);
-        userStorage.showUser(userId).getLikedFilms().add(id);
-        updateLikeAmount(id);
+        if (!filmStorage.dbContainsFilm(id)) {
+            throw new NotFoundException(String.format("Фильм с id %d не найден", id));
+        }
+        if (!userStorage.dbContainsUser(userId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
+        }
+        String sql = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
+        jdbcTemplate.update(sql, id, userId);
+        log.info("Пользователь {} поставил лайк фильму {}", userId, id);
     }
 
     public void unlikeFilm(Long id, Long userId) {
-        Film film = filmStorage.showFilm(id);
-        User user = userStorage.showUser(userId);
-
-        if (!film.getLikes().contains(userId)) {
-            throw new NoContentException(String.format("Пользователь с id %d не отметил фильм с id %d понравившимся", userId, id));
+        if (!filmStorage.dbContainsFilm(id)) {
+            throw new NotFoundException(String.format("Фильм с id %d не найден", id));
         }
-        if (!user.getLikedFilms().contains(id)) {
+        if (!userStorage.dbContainsUser(userId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
+        }
+        String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        if (jdbcTemplate.update(sql, id, userId) == 0) {
             throw new NoContentException(String.format("Фильм с id %d не найден в понравившихся у пользователя с id %d", id, userId));
         }
-
-        filmStorage.showFilm(id).getLikes().remove(userId);
-        userStorage.showUser(userId).getLikedFilms().remove(id);
-        updateLikeAmount(id);
+        log.info("Пользователь {} убрал лайк фильму {}", userId, id);
     }
 
     public Collection<Film> showMostLikedFilms(Integer count) {
-        return filmStorage.getFilms().values().stream().sorted((f0, f1) -> {
-            int comp = f0.getLikesAmount().compareTo(f1.getLikesAmount());
-            return (-1) * comp;
-        }).limit(count).collect(Collectors.toList());
+        String sql = "SELECT films.* FROM films JOIN likes on films.film_id = likes.film_id GROUP BY films.film_id ORDER BY COUNT(likes.user_id) DESC LIMIT ?";
+        return jdbcTemplate.query(sql, this::filmMapper, count);
     }
 
-    private void updateLikeAmount(Long id) {
-        filmStorage.showFilm(id).setLikesAmount(filmStorage.getFilms().get(id).getLikes().size());
+    private Film filmMapper(ResultSet resultSet, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(resultSet.getLong("film_id"));
+        film.setName(resultSet.getString("name"));
+        film.setDescription(resultSet.getString("description"));
+        film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
+        film.setDuration(resultSet.getInt("duration"));
+        film.setGenre(resultSet.getInt("genre"));
+        film.setMpa(resultSet.getInt("mpa"));
+        return film;
     }
 }

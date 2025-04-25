@@ -2,67 +2,84 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoContentException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
-import java.util.ArrayList;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
 public class UserService {
-    InMemoryUserStorage userStorage;
-
-    private final String friends = "Пользователь %d теперь дружит с пользователем %d";
-    private final String friendNotFound = "Пользователь с id %d не найден в друзьях у пользователя с id %d";
-    private final String noMoreFriends = "Пользователь %d больше не дружит с пользователем %d";
+    UserDbStorage userStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UserService(InMemoryUserStorage userStorage) {
+    public UserService(UserDbStorage userStorage, JdbcTemplate jdbcTemplate) {
         this.userStorage = userStorage;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void addFriend(Long id, Long friendId) {
-        userStorage.showUser(id).getFriends().add(friendId);
-        log.info(String.format(friends, id, friendId));
-        userStorage.showUser(friendId).getFriends().add(id);
-        log.info(String.format(friends, friendId, id));
+        if (!userStorage.dbContainsUser(id)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
+        }
+        if (!userStorage.dbContainsUser(friendId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", friendId));
+        }
+        String sql = "INSERT INTO friend_requests (user_id, friend_id) VALUES(?, ?)";
+        jdbcTemplate.update(sql, id, friendId);
+        log.info("Пользователь {} теперь дружит с пользователем {}", id, friendId);
     }
 
     public void removeFriend(Long id, Long friendId) {
-        User user = userStorage.showUser(id);
-        User friend = userStorage.showUser(friendId);
-
-        if (!user.getFriends().contains(friendId)) {
-            throw new NoContentException(String.format(friendNotFound, id, friendId));
+        if (!userStorage.dbContainsUser(id)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
         }
-        if (!friend.getFriends().contains(id)) {
-            throw new NoContentException(String.format(friendNotFound, friendId, id));
+        if (!userStorage.dbContainsUser(friendId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", friendId));
         }
-
-        userStorage.showUser(id).getFriends().remove(friendId);
-        log.info(String.format(noMoreFriends, id, friendId));
-        userStorage.showUser(friendId).getFriends().remove(id);
-        log.info(String.format(noMoreFriends, friendId, id));
+        String sql = "DELETE FROM friend_requests WHERE user_id = ? AND friend_id = ?";
+        if (jdbcTemplate.update(sql, id, friendId) == 0) {
+            throw new NoContentException(String.format("Пользователь с id %d не найден в друзьях у пользователя с id %d", id, friendId));
+        }
+        log.info("Пользователь {} больше не дружит с пользователем {}", id, friendId);
     }
 
     public Collection<User> showFriends(Long id) {
-        Collection<User> friends = new ArrayList<>();
-        for (Long friend : userStorage.showUser(id).getFriends()) {
-            friends.add(userStorage.showUser(friend));
+        if (userStorage.dbContainsUser(id)) {
+            List<User> friends;
+            String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friend_requests WHERE user_id = ?)";
+            friends = jdbcTemplate.query(sql, this::userMapper, id);
+            return friends;
         }
-        return friends;
+        throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
     }
 
     public Collection<User> showCommonFriends(Long id, Long otherId) {
-        Collection<User> commonFriends = new ArrayList<>();
-        for (Long friend : userStorage.showUser(id).getFriends()) {
-            if (userStorage.showUser(otherId).getFriends().contains(friend)) {
-                commonFriends.add(userStorage.showUser(friend));
-            }
+        if (!userStorage.dbContainsUser(id)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
         }
-        return commonFriends;
+        if (!userStorage.dbContainsUser(otherId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", otherId));
+        }
+        String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friend_requests WHERE user_id = ? OR user_id = ?)";
+        return jdbcTemplate.query(sql, this::userMapper, id, otherId);
+    }
+
+    private User userMapper(ResultSet resultSet, int rowNum) throws SQLException {
+        User user = new User();
+        user.setId(resultSet.getLong("user_id"));
+        user.setEmail(resultSet.getString("email"));
+        user.setLogin(resultSet.getString("login"));
+        user.setName(resultSet.getString("name"));
+        user.setBirthday(resultSet.getDate("birthday").toLocalDate());
+        return user;
     }
 }

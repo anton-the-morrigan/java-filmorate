@@ -13,6 +13,4 @@ public class User {
     String login;
     String name;
     LocalDate birthday;
-    Set<Long> friends = new HashSet<>();
-    Set<Long> likedFilms = new HashSet<>();
 }

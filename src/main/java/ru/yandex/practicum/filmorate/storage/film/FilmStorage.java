@@ -10,5 +10,7 @@ public interface FilmStorage {
 
     public Film updateFilm(Film newFilm);
 
+    public Film showFilm(Long id);
+
     public Collection<Film> showAllFilms();
 }
