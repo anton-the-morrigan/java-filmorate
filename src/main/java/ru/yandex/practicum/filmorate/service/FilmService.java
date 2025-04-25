@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 @Service
