@@ -1,73 +1,64 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
 
-@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    private final InMemoryFilmStorage filmStorage;
+    private final FilmService filmService;
 
-    private final Map<Integer, Film> films = new HashMap<>();
-    Integer filmId = 1;
+    private final String likePath = "/{id}/like/{user-id}";
+
+    public FilmController(InMemoryFilmStorage filmStorage, FilmService filmService) {
+        this.filmStorage = filmStorage;
+        this.filmService = filmService;
+    }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        filmValidator(film);
-        film.setId(filmId);
-        filmId++;
-        films.put(film.getId(), film);
-        return film;
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film create(@RequestBody Film film) {
+        return filmStorage.addFilm(film);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film newFilm) {
-        if (newFilm.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            filmValidator(newFilm);
-            oldFilm.setName(newFilm.getName());
-            oldFilm.setDescription(newFilm.getDescription());
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            oldFilm.setDuration(newFilm.getDuration());
-            log.info("Данные фильма обновлены");
-            return oldFilm;
-        }
-        throw new NotFoundException(String.format("Фильм с id %d не найден", newFilm.getId()));
+    public Film update(@RequestBody Film newFilm) {
+        return filmStorage.updateFilm(newFilm);
     }
 
     @GetMapping
     public Collection<Film> showAllFilms() {
-        return films.values();
+        return filmStorage.showAllFilms();
     }
 
-    void filmValidator(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ConditionsNotMetException("Название не может быть пустым");
+    @GetMapping("/{id}")
+    public Film showFilm(@PathVariable("id") Long id) {
+        return filmStorage.showFilm(id);
+    }
+
+    @PutMapping(likePath)
+    public void likeFilm(@PathVariable("id") Long id, @PathVariable("user-id") Long userId) {
+        filmService.likeFilm(id, userId);
+    }
+
+    @DeleteMapping(likePath)
+    public void unlikeFilm(@PathVariable("id") Long id, @PathVariable("user-id") Long userId) {
+        filmService.unlikeFilm(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> showMostLikedFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
+        if (count < 0) {
+            throw new ValidationException("count", "Количество должно быть больше нуля");
         }
-        log.info("Выбрано название фильма: {}", film.getName());
-        if (film.getDescription().length() > 200) {
-            throw new ConditionsNotMetException("Длина описания не может превышать 200 символов");
-        }
-        log.info("Выбрано описание фильма: {}", film.getDescription());
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ConditionsNotMetException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        log.info("Выбрана дата релиза фильма: {}", film.getReleaseDate());
-        if (film.getDuration() < 0) {
-            throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
-        }
-        log.info("Выбрана продолжительность фильма: {}", film.getDuration());
+        return filmService.showMostLikedFilms(count);
     }
 
 }
