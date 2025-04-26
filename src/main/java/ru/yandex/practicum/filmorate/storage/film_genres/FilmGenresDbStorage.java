@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Component
 public class FilmGenresDbStorage {
@@ -20,7 +22,7 @@ public class FilmGenresDbStorage {
         String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = ?";
         jdbcTemplate.update(deleteGenresSql, filmId);
 
-        for(Long genreId : genreIds) {
+        for(Long genreId : new HashSet<>(genreIds)) {
             String insertGenreSql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
             jdbcTemplate.update(insertGenreSql, filmId, genreId);
         }
