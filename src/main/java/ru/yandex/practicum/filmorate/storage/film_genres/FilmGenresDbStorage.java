@@ -22,7 +22,7 @@ public class FilmGenresDbStorage {
         String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = ?";
         jdbcTemplate.update(deleteGenresSql, filmId);
 
-        for(Long genreId : new HashSet<>(genreIds)) {
+        for (Long genreId : new HashSet<>(genreIds)) {
             String insertGenreSql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
             jdbcTemplate.update(insertGenreSql, filmId, genreId);
         }
