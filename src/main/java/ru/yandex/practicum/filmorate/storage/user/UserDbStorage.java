@@ -34,13 +34,13 @@ public class UserDbStorage implements UserStorage {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection
+            PreparedStatement preparedStatement = connection
                     .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, user.getEmail());
-            ps.setString(2, user.getLogin());
-            ps.setString(3, user.getName());
-            ps.setDate(4, new Date(user.getBirthday().getYear(), user.getBirthday().getMonthValue(), user.getBirthday().getDayOfMonth()));
-            return ps;
+            preparedStatement.setString(1, user.getEmail());
+            preparedStatement.setString(2, user.getLogin());
+            preparedStatement.setString(3, user.getName());
+            preparedStatement.setDate(4, new Date(user.getBirthday().getYear(), user.getBirthday().getMonthValue(), user.getBirthday().getDayOfMonth()));
+            return preparedStatement;
         }, keyHolder);
 
         user.setId((keyHolder.getKey()).longValue());

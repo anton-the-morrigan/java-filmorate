@@ -26,18 +26,18 @@ public class FilmDbStorage implements FilmStorage {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection
+            PreparedStatement preparedStatement = connection
                     .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, film.getName());
-            ps.setString(2, film.getDescription());
-            ps.setDate(3, Date.valueOf(film.getReleaseDate()));
-            ps.setInt(4, film.getDuration());
-            ps.setLong(5, film.getMpaId());
+            preparedStatement.setString(1, film.getName());
+            preparedStatement.setString(2, film.getDescription());
+            preparedStatement.setDate(3, Date.valueOf(film.getReleaseDate()));
+            preparedStatement.setInt(4, film.getDuration());
+            preparedStatement.setLong(5, film.getMpaId());
 
-            return ps;
+            return preparedStatement;
         }, keyHolder);
 
-        film.setId(((Integer) keyHolder.getKey()).longValue());
+        film.setId((keyHolder.getKey()).longValue());
         return film;
     }
 
