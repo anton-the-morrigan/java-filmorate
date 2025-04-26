@@ -2,13 +2,19 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.Date;
+
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -24,7 +30,20 @@ public class UserDbStorage implements UserStorage {
     public User createUser(User user) {
         userValidator(user);
         String sql = "INSERT INTO users(email, login, name, birthday) VALUES(?, ?, ?, ?)";
-        jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection
+                    .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, user.getEmail());
+            ps.setString(2, user.getLogin());
+            ps.setString(3, user.getName());
+            ps.setDate(4, new Date(user.getBirthday().getYear(), user.getBirthday().getMonthValue(), user.getBirthday().getDayOfMonth()) );
+            return ps;
+        }, keyHolder);
+
+        user.setId((keyHolder.getKey()).longValue());
         return user;
     }
 
@@ -59,7 +78,7 @@ public class UserDbStorage implements UserStorage {
         try {
             jdbcTemplate.queryForObject(sql, this::userMapper, id);
             return true;
-        } catch (NotFoundException e) {
+        } catch (RuntimeException e) {
             return false;
         }
     }

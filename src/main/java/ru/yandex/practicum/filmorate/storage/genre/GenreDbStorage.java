@@ -21,7 +21,7 @@ public class GenreDbStorage implements GenreStorage {
         String sql = "SELECT * FROM genres WHERE genre_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, this::genreMapper, id);
-        } catch (NotFoundException e) {
+        } catch (RuntimeException e) {
             throw new NotFoundException(String.format("Жанр с id %d не найден", id));
         }
     }
@@ -29,6 +29,11 @@ public class GenreDbStorage implements GenreStorage {
     public Collection<Genre> showAllGenres() {
         String sql = "SELECT * FROM genres ORDER BY genre_id";
         return jdbcTemplate.query(sql, this::genreMapper);
+    }
+
+    public Collection<Genre> getGenreForFilm(Long id) {
+        String sql = "SELECT genre_id FROM film_genres WHERE film_id = ?";
+        return jdbcTemplate.query(sql, this::genreMapper, id);
     }
 
     private Genre genreMapper(ResultSet resultSet, int rowNum) throws SQLException {

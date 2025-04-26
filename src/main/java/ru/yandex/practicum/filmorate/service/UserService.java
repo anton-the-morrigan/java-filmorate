@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -54,10 +53,8 @@ public class UserService {
 
     public Collection<User> showFriends(Long id) {
         if (userStorage.dbContainsUser(id)) {
-            List<User> friends;
             String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friend_requests WHERE user_id = ?)";
-            friends = jdbcTemplate.query(sql, this::userMapper, id);
-            return friends;
+            return jdbcTemplate.query(sql, this::userMapper, id);
         }
         throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
     }
@@ -69,8 +66,8 @@ public class UserService {
         if (!userStorage.dbContainsUser(otherId)) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", otherId));
         }
-        String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friend_requests WHERE user_id = ? OR user_id = ?)";
-        return jdbcTemplate.query(sql, this::userMapper, id, otherId);
+        String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friend_requests WHERE user_id = ? OR user_id = ?) AND user_id != ? AND user_id != ?";
+        return jdbcTemplate.query(sql, this::userMapper, id, otherId, id, otherId);
     }
 
     private User userMapper(ResultSet resultSet, int rowNum) throws SQLException {
