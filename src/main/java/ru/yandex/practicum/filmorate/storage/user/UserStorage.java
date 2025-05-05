@@ -11,5 +11,7 @@ public interface UserStorage {
 
     public User updateUser(User newUser);
 
+    public User showUser(Long id);
+
     public Collection<User> showAllUsers();
 }

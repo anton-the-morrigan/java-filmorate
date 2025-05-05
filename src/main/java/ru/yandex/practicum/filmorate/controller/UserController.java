@@ -4,19 +4,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final InMemoryUserStorage userStorage;
+    private final UserDbStorage userStorage;
     private final UserService userService;
 
     private final String friendsPath = "/{id}/friends/{friend-id}";
 
-    public UserController(InMemoryUserStorage userStorage, UserService userService) {
+    public UserController(UserDbStorage userStorage, UserService userService) {
         this.userStorage = userStorage;
         this.userService = userService;
     }
